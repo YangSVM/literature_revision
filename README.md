@@ -6,7 +6,9 @@
 
 基本思路是：租用云服务器，用ollama运行本地大模型，再将论文上传至云服务器，用脚本调用大模型来帮我阅读并检查论文。
 
-首先需要选一个安全性良好、信誉较高的云服务器平台。这里我选择了国家超算互联网（https://www.scnet.cn/ui/mall/）。然后，点击“控制台”，创建一个notebook，租用一块A800 GPU，模型镜像选择jupyterlab-ollama，这样免去安装Ollama这一步了。
+首先需要选一个安全性良好、信誉较高的云服务器平台。这里我选择了国家超算互联网（https://www.scnet.cn/ui/mall/）。
+
+创建账号，点击“控制台”，创建一个notebook，租用一块A800 GPU，模型镜像选择jupyterlab-ollama，这样也免去安装Ollama这一步了。
 
 进入实例，运行Ollama（在命令行中输入Ollama serve）。然后下载了QwQ，它在A800上运行非常顺畅，能达到几十个token/s的输出速度，而且感觉效果确实和deepseek-r1相当。
 
