@@ -10,14 +10,14 @@
 
 创建账号，点击“控制台”，创建一个notebook，租用一块A800 GPU，模型镜像选择jupyterlab-ollama，这样也免去安装Ollama这一步了。
 
-点击jupyterlab进入实例，创建一个终端。运行ollama（在命令行中输入ollama serve）。然后下载了QwQ，它在A800上运行非常顺畅，能达到几十个token/s的输出速度，而且感觉效果确实和deepseek-r1相当。
+点击jupyterlab进入实例，创建一个终端。运行ollama（在命令行中输入ollama serve）。然后用下面的命令下载QwQ。QwQ在A800上运行非常顺畅，能达到几十个token/s的输出速度，而且感觉效果确实和deepseek-r1相当。
 
 	ollama run qwq
 
 接下来，将论文上传至云服务器。这里还需要安装docx2txt，将word转化为txt
 
 	sudo apt-get install docx2txt
-	docx2txt thesis.docx - > thesis.txt  # 将内容转换为纯文本并保存到 output.txt
+	docx2txt thesis.docx - > thesis.txt  # 将内容转换为纯文本并保存到 thesis.txt
 
 接下来，我首先尝试用curl命令，通过prompt把论文输入大模型。
 
