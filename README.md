@@ -12,7 +12,7 @@
 
 进入实例，运行Ollama（在命令行中输入Ollama serve）。然后下载了QwQ，它在A800上运行非常顺畅，能达到几十个token/s的输出速度，而且感觉效果确实和deepseek-r1相当。
 
-	Ollama run qwq
+	ollama run qwq
 
 接下来，将论文上传至云服务器。这里还需要安装docx2txt，将word转化为txt
 
