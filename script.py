@@ -1,26 +1,35 @@
 from ollama import chat
 import os
 
-def chunk_text_by_character_count(text, chunk_size=1500):
+import time
+
+def chunk_lines_by_character_count(lines, chunk_size=1500):
     """
-    将文本分割成固定字符数量的块。
+    将文本行按字符数分组，确保每组的字符数不超过给定值。
 
     Args:
-        text: 要分割的文本字符串。
-        chunk_size: 每个 chunk 的目标字符数量 (默认为 1500)。
+        lines: 文本行列表
+        chunk_size: 每组最大字符数 (默认为 1500)
 
     Returns:
-        一个包含文本块的列表。
+        包含分组文本的列表
     """
     chunks = []
-    start_index = 0
-    text_length = len(text)
+    current_chunk = []
+    current_length = 0
 
-    while start_index < text_length:
-        end_index = min(start_index + chunk_size, text_length) # 确保不超过文本末尾
-        chunk = text[start_index:end_index]
-        chunks.append(chunk)
-        start_index = end_index
+    for line in lines:
+        line_length = len(line)
+        if current_length + line_length > chunk_size:
+            chunks.append(''.join(current_chunk))
+            current_chunk = []
+            current_length = 0
+        current_chunk.append(line)
+        current_length += line_length
+
+    if current_chunk:  # 添加最后一个chunk
+        chunks.append(''.join(current_chunk))
+
     return chunks
 
 
@@ -33,7 +42,7 @@ try:
     data_dir = 'data'
     for filename in os.listdir(data_dir):
         file_path = os.path.join(data_dir, filename)
-        chapter_content = ""
+        chapter_content = []
 
         if os.path.isfile(file_path):
             print(f"正在读取文件: {filename}")
@@ -41,15 +50,14 @@ try:
                 for line in file:
                     # 过滤掉以%开头的LaTeX注释行 和 空行
                     if not line.lstrip().startswith('%') and line.lstrip()!='':
-                        chapter_content += line
-                chapter_content += "\n"  # 在文件内容之间添加换行符
+                        chapter_content.append(line)
         
-        thesis_content_list.append(chapter_content)
+        thesis_content_list += chapter_content
         print("文件", filename, "读取成功")
         # 添加代码：打印部分读取的文档内容
         print("\n--- 文件内容预览 (前 100 个字符): ---")
         if len(chapter_content) > 100:
-            print(chapter_content[:100] + "...")
+            print(chapter_content[:100] )
         else:
             print(chapter_content)
     print("\n--- 预览结束 ---")
@@ -66,10 +74,10 @@ for content in thesis_content_list:
     thesis_content += content
 
 # 2. 分割文本成字符数 chunks
-print("将文本分割成固定字符数块...")
-chunk_size_param = 1500 # 你可以根据需要调整 chunk 大小
-text_chunks = chunk_text_by_character_count(thesis_content, chunk_size=chunk_size_param) # 使用字符数 chunking
-print(f"文本已分割成 {len(text_chunks)} 个字符数块，每块大约 {chunk_size_param} 字符。")
+print("将文本按行分组，确保每组字符数不超过给定值...")
+chunk_size_param = 1500
+text_chunks = chunk_lines_by_character_count(thesis_content_list, chunk_size=chunk_size_param)
+print(f"文本已分割成 {len(text_chunks)} 组，每组字符数不超过 {chunk_size_param}。")
 
 full_response = "" # 用于存储所有chunk的响应
 num_chunks_to_process = len(text_chunks) #  处理所有 chunk (可以根据需要修改)
@@ -116,8 +124,17 @@ for i, chunk in enumerate(text_chunks):
                 print(content, end="", flush=True)  # 实时流式打印
                 chunk_response += content # 累加当前 chunk 的响应
 
-        full_response += f"\n\n--- 第 {i+1}/{len(text_chunks)} 字符数块检查结果 ---\n{chunk_response}" # 添加chunk分隔符和响应内容
+        chunk_response_added = f"\n\n--- 第 {i+1}/{len(text_chunks)} 字符数块检查结果 ---\n{chunk_response}" # 添加chunk分隔符和响应内容
+        full_response += chunk_response_added
         print(f"\n第 {i+1}/{len(text_chunks)} 字符数块处理完成。")
+        # 暂存当前chunk的最终结果
+        print("当前字符数块的最终结果到 advice_chapters.txt...")
+        try:
+            with open("advice_chapters.txt", "a", encoding="utf-8") as f:
+                f.write(chunk_response_added)
+            print("结果已保存至 advice_chapters.txt")
+        except Exception as e:
+            print(f"保存结果到 advice_chapters.txt 失败: {e}")
 
     except Exception as e:
         print(f"处理第 {i+1}/{len(text_chunks)} 字符数块时 API 调用失败: {e}")
@@ -127,11 +144,13 @@ print("\n所有字符数块处理完成。")
 # 4. 保存所有chunk的最终结果
 print("保存所有字符数块的最终结果到 advice_11.txt...")
 try:
-    with open("advice_11.txt", "w", encoding="utf-8") as f:
+    time_str = time.strftime('%Y_%m_%d_%H_%M_%s', time.localtime(time.time()))
+    advice_fname = "advice_"+ time_str +".txt"
+    with open(advice_fname, "w", encoding="utf-8") as f:
         f.write(full_response)
-    print("结果已保存至 advice_11.txt")
+    print("结果已保存至 ", advice_fname)
 
 except Exception as e:
-    print(f"保存结果到 advice_11.txt 失败: {e}")
+    print(f"保存结果到 {advice_fname} 失败: {e}")
 
 print("脚本执行完毕 (字符数 Chunking 模式)。")
