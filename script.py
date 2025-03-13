@@ -1,4 +1,5 @@
 from ollama import chat
+import os
 
 def chunk_text_by_character_count(text, chunk_size=1500):
     """
@@ -26,17 +27,31 @@ def chunk_text_by_character_count(text, chunk_size=1500):
 print("脚本开始执行 (字符数 Chunking 模式)...")
 
 # 1. 读取文件
-print("开始读取 thesis.txt 文件...")
+thesis_content_list = []
 try:
-    with open("thesis.txt", "r", encoding="utf-8") as file:
-        thesis_content = file.read()
-    print("文件读取成功")
-    # 添加代码：打印部分读取的文档内容
-    print("\n--- 文件内容预览 (前 100 个字符): ---")
-    if len(thesis_content) > 100:
-        print(thesis_content[:100] + "...")
-    else:
-        print(thesis_content)
+    print("开始读取 data  文件夹...")
+    data_dir = 'data'
+    for filename in os.listdir(data_dir):
+        file_path = os.path.join(data_dir, filename)
+        chapter_content = ""
+
+        if os.path.isfile(file_path):
+            print(f"正在读取文件: {filename}")
+            with open(file_path, "r", encoding="utf-8") as file:
+                for line in file:
+                    # 过滤掉以%开头的LaTeX注释行 和 空行
+                    if not line.lstrip().startswith('%') and line.lstrip()!='':
+                        chapter_content += line
+                chapter_content += "\n"  # 在文件内容之间添加换行符
+        
+        thesis_content_list.append(chapter_content)
+        print("文件", filename, "读取成功")
+        # 添加代码：打印部分读取的文档内容
+        print("\n--- 文件内容预览 (前 100 个字符): ---")
+        if len(chapter_content) > 100:
+            print(chapter_content[:100] + "...")
+        else:
+            print(chapter_content)
     print("\n--- 预览结束 ---")
 
 except FileNotFoundError:
@@ -45,6 +60,10 @@ except FileNotFoundError:
 except Exception as e:
     print(f"读取文件时发生错误: {e}")
     exit()
+
+thesis_content = ''
+for content in thesis_content_list:
+    thesis_content += content
 
 # 2. 分割文本成字符数 chunks
 print("将文本分割成固定字符数块...")
