@@ -40,7 +40,7 @@ thesis_content_list = []
 try:
     print("开始读取 data  文件夹...")
     data_dir = 'data'
-    for filename in os.listdir(data_dir):
+    for filename in sorted(os.listdir(data_dir)):
         file_path = os.path.join(data_dir, filename)
         chapter_content = []
 
@@ -69,9 +69,9 @@ except Exception as e:
     print(f"读取文件时发生错误: {e}")
     exit()
 
-thesis_content = ''
-for content in thesis_content_list:
-    thesis_content += content
+# thesis_content = ''
+# for content in thesis_content_list:
+#     thesis_content += content
 
 # 2. 分割文本成字符数 chunks
 print("将文本按行分组，确保每组字符数不超过给定值...")
